@@ -1,3 +1,4 @@
+import os
 import paramiko
 from typing import Optional, Dict
 
@@ -28,6 +29,52 @@ class SSHClient:
         out = stdout.read().decode(errors="ignore")
         err = stderr.read().decode(errors="ignore")
         return {"exit_code": exit_status, "stdout": out, "stderr": err}
+
+    def put(self, local_path: str, remote_path: str):
+        if self.client is None:
+            self.connect()
+        sftp = self.client.open_sftp()
+        try:
+            rem_dir = os.path.dirname(remote_path)
+            if rem_dir:
+                self._sftp_mkdirs(sftp, rem_dir)
+        except Exception:
+            pass
+        sftp.put(local_path, remote_path)
+        sftp.close()
+
+    def put_data(self, data: bytes, remote_path: str):
+        if self.client is None:
+            self.connect()
+        sftp = self.client.open_sftp()
+        try:
+            rem_dir = os.path.dirname(remote_path)
+            if rem_dir:
+                self._sftp_mkdirs(sftp, rem_dir)
+        except Exception:
+            pass
+        with sftp.file(remote_path, "wb") as rf:
+            rf.write(data)
+        sftp.close()
+
+    def _sftp_mkdirs(self, sftp, remote_directory: str):
+        # create directories recursively (POSIX-style)
+        if not remote_directory:
+            return
+        parts = []
+        cur = remote_directory
+        while cur and cur != "/":
+            parts.append(cur)
+            cur = os.path.dirname(cur)
+        parts = list(reversed(parts))
+        for path in parts:
+            try:
+                sftp.stat(path)
+            except IOError:
+                try:
+                    sftp.mkdir(path)
+                except Exception:
+                    pass
 
     def close(self):
         if self.client:
