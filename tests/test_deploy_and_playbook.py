@@ -1,12 +1,18 @@
-import os
 import yaml
-import tempfile
 
 from mosberg import tasks
 
 
 class DummySSHClient:
-    def __init__(self, hostname, username="root", port=22, key_filename=None, password=None, timeout=10):
+    def __init__(
+        self,
+        hostname,
+        username="root",
+        port=22,
+        key_filename=None,
+        password=None,
+        timeout=10,
+    ):
         self.hostname = hostname
         self.username = username
         self.port = port
@@ -32,7 +38,14 @@ def test_deploy_and_playbook(monkeypatch, tmp_path):
     # monkeypatch the SSHClient used inside tasks
     monkeypatch.setattr(tasks, "SSHClient", DummySSHClient)
 
-    hosts = [{"name": "host1", "host": "127.0.0.1", "user": "tester", "vars": {"greeting": "world"}}]
+    hosts = [
+        {
+            "name": "host1",
+            "host": "127.0.0.1",
+            "user": "tester",
+            "vars": {"greeting": "world"},
+        }
+    ]
     Inv = type("Inv", (), {"hosts": hosts})
 
     # create a local file to deploy
@@ -56,11 +69,20 @@ def test_deploy_and_playbook(monkeypatch, tmp_path):
             "vars": {},
             "tasks": [
                 {"name": "echo", "command": "echo hi"},
-                {"name": "copy", "copy": {"src": str(local_file), "dest": "/tmp/remote.txt"}},
-                {"name": "template", "template": {"src": str(tpl), "dest": "/tmp/remote.tpl"}},
+                {
+                    "name": "copy",
+                    "copy": {"src": str(local_file), "dest": "/tmp/remote.txt"},
+                },
+                {
+                    "name": "template",
+                    "template": {"src": str(tpl), "dest": "/tmp/remote.tpl"},
+                },
                 {"name": "script", "script": {"src": str(local_file), "args": ""}},
                 {"name": "service", "service": {"name": "nginx", "state": "restart"}},
-                {"name": "package", "package": {"name": "curl", "state": "present", "manager": "apt"}},
+                {
+                    "name": "package",
+                    "package": {"name": "curl", "state": "present", "manager": "apt"},
+                },
             ],
         }
     ]

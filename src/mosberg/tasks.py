@@ -1,6 +1,5 @@
-import threading
 import os
-import tempfile
+import threading
 from typing import Any, Dict, Optional
 
 import yaml
@@ -9,7 +8,9 @@ from .sshclient import SSHClient
 from .templates import render_template
 
 
-def _make_result_from_exec(exec_res: Optional[Dict[str, Any]] = None, error: Optional[Exception] = None) -> Dict[str, Any]:
+def _make_result_from_exec(
+    exec_res: Optional[Dict[str, Any]] = None, error: Optional[Exception] = None
+) -> Dict[str, Any]:
     if exec_res is None:
         exec_res = {}
     exit_code = exec_res.get("exit_code")
@@ -41,7 +42,9 @@ def run_command(
         name = host.get("name") or host.get("host")
         hostname = host["host"]
         user = host.get("user") or "root"
-        client = SSHClient(hostname, username=user, port=host.get("port", 22), **ssh_kwargs)
+        client = SSHClient(
+            hostname, username=user, port=host.get("port", 22), **ssh_kwargs
+        )
         try:
             res = client.run(command)
             out = _make_result_from_exec(res)
@@ -85,7 +88,9 @@ def deploy_file(
         name = host.get("name") or host.get("host")
         hostname = host["host"]
         user = host.get("user") or "root"
-        client = SSHClient(hostname, username=user, port=host.get("port", 22), **ssh_kwargs)
+        client = SSHClient(
+            hostname, username=user, port=host.get("port", 22), **ssh_kwargs
+        )
         try:
             client.put(local_path, remote_path)
             with lock:
@@ -117,7 +122,11 @@ def _filter_hosts(inventory, selector):
         return inventory.hosts
     # support comma-separated host names
     wanted = [s.strip() for s in str(selector).split(",") if s.strip()]
-    out = [h for h in inventory.hosts if (h.get("name") in wanted or h.get("host") in wanted)]
+    out = [
+        h
+        for h in inventory.hosts
+        if (h.get("name") in wanted or h.get("host") in wanted)
+    ]
     return out
 
 
@@ -149,16 +158,22 @@ def run_playbook(
                 ttype = "command"
                 cmd = task["command"]
                 tmp = type("Inv", (), {"hosts": hosts})
-                res = run_command(tmp, cmd, concurrency=concurrency, ssh_kwargs=ssh_kwargs)
+                res = run_command(
+                    tmp, cmd, concurrency=concurrency, ssh_kwargs=ssh_kwargs
+                )
                 task_result = {"name": t_name, "type": ttype, "hosts": res}
 
-            elif "copy" in task or ("src" in task and "dest" in task and task.get("action") == "copy"):
+            elif "copy" in task or (
+                "src" in task and "dest" in task and task.get("action") == "copy"
+            ):
                 ttype = "copy"
                 entry = task.get("copy") or task
                 src = entry.get("src")
                 dest = entry.get("dest")
                 tmp = type("Inv", (), {"hosts": hosts})
-                res = deploy_file(tmp, src, dest, concurrency=concurrency, ssh_kwargs=ssh_kwargs)
+                res = deploy_file(
+                    tmp, src, dest, concurrency=concurrency, ssh_kwargs=ssh_kwargs
+                )
                 task_result = {"name": t_name, "type": ttype, "hosts": res}
 
             elif "template" in task:
@@ -179,7 +194,12 @@ def run_playbook(
                     except Exception as e:
                         t_res[name] = {"ok": False, "error": f"render error: {e}"}
                         return
-                    client = SSHClient(host.get("host"), username=host.get("user") or "root", port=host.get("port", 22), **ssh_kwargs)
+                    client = SSHClient(
+                        host.get("host"),
+                        username=host.get("user") or "root",
+                        port=host.get("port", 22),
+                        **ssh_kwargs,
+                    )
                     try:
                         client.put_data(content.encode("utf-8"), dest)
                         t_res[name] = {"ok": True}
@@ -212,7 +232,12 @@ def run_playbook(
 
                 def script_worker(host):
                     name = host.get("name") or host.get("host")
-                    client = SSHClient(host.get("host"), username=host.get("user") or "root", port=host.get("port", 22), **ssh_kwargs)
+                    client = SSHClient(
+                        host.get("host"),
+                        username=host.get("user") or "root",
+                        port=host.get("port", 22),
+                        **ssh_kwargs,
+                    )
                     remote_tmp = f"/tmp/{os.path.basename(src)}"
                     try:
                         client.put(src, remote_tmp)
@@ -257,7 +282,9 @@ def run_playbook(
                 else:
                     cmd = f"sudo systemctl {state} {svc_name}"
                 tmp = type("Inv", (), {"hosts": hosts})
-                res = run_command(tmp, cmd, concurrency=concurrency, ssh_kwargs=ssh_kwargs)
+                res = run_command(
+                    tmp, cmd, concurrency=concurrency, ssh_kwargs=ssh_kwargs
+                )
                 task_result = {"name": t_name, "type": ttype, "hosts": res}
 
             elif "package" in task:
@@ -279,7 +306,9 @@ def run_playbook(
                 else:
                     cmd = f"sudo {manager} install -y {pkg_name}"
                 tmp = type("Inv", (), {"hosts": hosts})
-                res = run_command(tmp, cmd, concurrency=concurrency, ssh_kwargs=ssh_kwargs)
+                res = run_command(
+                    tmp, cmd, concurrency=concurrency, ssh_kwargs=ssh_kwargs
+                )
                 task_result = {"name": t_name, "type": ttype, "hosts": res}
 
             else:
