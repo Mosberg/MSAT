@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mosberg"
+version = "0.1.0"
+description = "Mosberg Server Automation Toolkit"
+readme = "README.md"
+authors = [{name = "Your Name", email = "you@example.com"}]
+license = {text = "MIT"}
+dependencies = [
+  "click>=8.0",
+  "paramiko>=2.11",
+  "Jinja2>=3.0",
+  "PyYAML>=6.0",
+  "rich>=13.0",
+]
+
+[project.scripts]
+mosberg = "mosberg.cli:main"

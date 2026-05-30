@@ -1,0 +1,5 @@
+- name: Example playbook
+  hosts: all
+  tasks:
+    - name: Run uname
+      command: uname -a
