@@ -1,10 +1,19 @@
 import os
+from typing import Dict, Optional
+
 import paramiko
-from typing import Optional, Dict
 
 
 class SSHClient:
-    def __init__(self, hostname: str, username: str = "root", port: int = 22, key_filename: Optional[str] = None, password: Optional[str] = None, timeout: int = 10):
+    def __init__(
+        self,
+        hostname: str,
+        username: str = "root",
+        port: int = 22,
+        key_filename: Optional[str] = None,
+        password: Optional[str] = None,
+        timeout: int = 10,
+    ):
         self.hostname = hostname
         self.username = username
         self.port = port
@@ -17,9 +26,14 @@ class SSHClient:
         self.client = paramiko.SSHClient()
         self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.client.connect(self.hostname, port=self.port, username=self.username,
-                            key_filename=self.key_filename, password=self.password,
-                            timeout=self.timeout)
+        self.client.connect(
+            self.hostname,
+            port=self.port,
+            username=self.username,
+            key_filename=self.key_filename,
+            password=self.password,
+            timeout=self.timeout,
+        )
 
     def run(self, command: str, timeout: Optional[int] = None) -> Dict[str, object]:
         if self.client is None:

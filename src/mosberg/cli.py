@@ -4,7 +4,7 @@ import click
 import yaml
 
 from .inventory import Inventory
-from .tasks import run_command, deploy_file, run_playbook
+from .tasks import deploy_file, run_command, run_playbook
 from .templates import render_template
 
 
@@ -14,7 +14,9 @@ def main():
 
 
 @main.command("list")
-@click.option("--inventory", "-i", default="examples/inventory.yml", help="Path to inventory YAML")
+@click.option(
+    "--inventory", "-i", default="examples/inventory.yml", help="Path to inventory YAML"
+)
 def list_hosts(inventory):
     inv = Inventory.from_yaml(inventory)
     for host in inv.hosts:
@@ -90,7 +92,7 @@ def playbook(playbook, inventory):
     for play in res:
         click.echo(f"Play: {play.get('name')}")
         for k, v in play.items():
-            if k == 'name':
+            if k == "name":
                 continue
             click.echo(f"  Task: {k}")
             click.echo(f"    {v}")
